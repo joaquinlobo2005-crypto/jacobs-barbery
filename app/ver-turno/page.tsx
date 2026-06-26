@@ -46,7 +46,9 @@ export default function VerTurno() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <nav className="flex justify-between items-center px-8 py-5 border-b border-zinc-800">
-        <Link href="/" className="text-red-500 font-bold text-xl tracking-widest uppercase"><img src="/<img src="/logo.png" alt="JacobsBarber" className="h-10 w-10 rounded-full" />.png" alt="JacobsBarber" className="h-10 w-10 rounded-full" /></Link>
+        <Link href="/">
+          <img src="/logo.png" alt="JacobsBarber" className="h-12 w-12 rounded-full object-cover" />
+        </Link>
       </nav>
 
       <section className="max-w-md mx-auto px-6 py-16">
