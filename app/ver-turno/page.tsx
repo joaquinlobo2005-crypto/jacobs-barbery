@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
 
@@ -47,7 +48,7 @@ export default function VerTurno() {
     <main className="min-h-screen bg-zinc-950 text-white">
       <nav className="flex justify-between items-center px-8 py-5 border-b border-zinc-800">
         <Link href="/">
-          <img src="/logo.png" alt="JacobsBarber" className="h-12 w-12 rounded-full object-cover" />
+          <Image src="/logo.png" alt="JacobsBarber" width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
         </Link>
       </nav>
 

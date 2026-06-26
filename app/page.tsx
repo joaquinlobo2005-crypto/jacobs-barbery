@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Home() {
@@ -6,7 +7,7 @@ export default function Home() {
 
       {/* NAVBAR */}
       <nav className="flex justify-between items-center px-8 py-5 border-b border-zinc-800">
-        <img src="/logo.png" alt="JacobsBarber" className="h-12 w-12 rounded-full object-cover" />
+        <Image src="/logo.png" alt="JacobsBarber" width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
         <div className="flex gap-6 text-sm text-zinc-400">
           <Link href="/reservar" className="hover:text-red-500 transition">Reservar</Link>
           <Link href="/ver-turno" className="hover:text-red-500 transition">Ver turno</Link>
