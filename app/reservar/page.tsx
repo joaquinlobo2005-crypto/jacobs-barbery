@@ -15,14 +15,24 @@ export default function Reservar() {
 
   const horarios = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00']
 
+  const normalizarHora = (hora: string) => {
+    if (!hora) return ''
+    const [h, m] = hora.split(':')
+    const horaNormalizada = String(parseInt(h, 10) || 0).padStart(2, '0')
+    const minutoNormalizado = String(parseInt(m || '0', 10) || 0).padStart(2, '0')
+    return `${horaNormalizada}:${minutoNormalizado}`
+  }
+
   const cargarHorariosOcupados = async (fecha: string) => {
     if (!fecha) return
+    setHorariosOcupados([])
     const { data } = await supabase
       .from('turnos')
       .select('hora')
       .eq('fecha', fecha)
       .neq('estado', 'cancelado')
-    setHorariosOcupados(data?.map((t: any) => t.hora) || [])
+    const horasOcupadas = (data?.map((t: any) => normalizarHora(t.hora)) || []).filter(Boolean)
+    setHorariosOcupados(horasOcupadas)
   }
 
   useEffect(() => {
@@ -99,17 +109,19 @@ export default function Reservar() {
   value={form.fecha}
   onChange={e => {
     setForm({...form, fecha: e.target.value, hora: ''})
+    setHorariosOcupados([])
   }}
 />
 
             {form.fecha && (
               <div className="grid grid-cols-3 gap-2">
-            {horarios.map(h => {
-                  const ocupado = horariosOcupados.includes(h)
-                  const seleccionado = form.hora === h
+                {horarios.map(h => {
+                  const horaNormalizada = normalizarHora(h)
+                  const ocupado = horariosOcupados.includes(horaNormalizada)
+                  const seleccionado = form.hora === horaNormalizada
                   return (
                     <button key={h}
-                      onClick={() => !ocupado && setForm({...form, hora: h})}
+                      onClick={() => !ocupado && setForm({...form, hora: horaNormalizada})}
                       disabled={ocupado}
                       className={`py-2 rounded-xl border text-sm transition
                         ${ocupado ? 'border-zinc-700 bg-zinc-900 text-zinc-600 cursor-not-allowed line-through' : ''}
