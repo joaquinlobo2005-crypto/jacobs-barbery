@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '../../lib/supabase'
 
@@ -7,34 +7,33 @@ export default function Reservar() {
   const [paso, setPaso] = useState(1)
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
+  const [horariosOcupados, setHorariosOcupados] = useState<string[]>([])
   const [form, setForm] = useState({
     nombre: '', telefono: '', servicio: '', fecha: '', hora: ''
   })
 
   const horarios = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00']
 
+  const cargarHorariosOcupados = async (fecha: string) => {
+    if (!fecha) return
+    const { data } = await supabase
+      .from('turnos')
+      .select('hora')
+      .eq('fecha', fecha)
+      .neq('estado', 'cancelado')
+    setHorariosOcupados(data?.map((t: any) => t.hora) || [])
+  }
+
+  useEffect(() => {
+    if (form.fecha) cargarHorariosOcupados(form.fecha)
+  }, [form.fecha])
+
   const confirmarTurno = async () => {
     setCargando(true)
     setError('')
-
-    // Verificar si ya existe un turno en esa fecha y hora
-    const { data } = await supabase
-      .from('turnos')
-      .select('id')
-      .eq('fecha', form.fecha)
-      .eq('hora', form.hora)
-
-    if (data && data.length > 0) {
-      setError('❌ Ese horario ya está reservado. Elegí otro.')
-      setCargando(false)
-      return
-    }
-
-    // Guardar el turno
     const { error: err } = await supabase
       .from('turnos')
       .insert([{ ...form, estado: 'pendiente' }])
-
     if (err) {
       setError('Hubo un error al guardar. Intentá de nuevo.')
     } else {
@@ -46,7 +45,9 @@ export default function Reservar() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <nav className="flex justify-between items-center px-8 py-5 border-b border-zinc-800">
-        <img src="/logo.png" alt="JacobsBarber" className="h-12 w-12 rounded-full object-cover" />
+        <Link href="/">
+          <img src="/logo.png" alt="JacobsBarber" className="h-12 w-12 rounded-full object-cover" />
+        </Link>
       </nav>
 
       <section className="max-w-md mx-auto px-6 py-16">
@@ -94,25 +95,39 @@ export default function Reservar() {
               type="date"
               className="bg-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
               value={form.fecha}
-              onChange={e => setForm({...form, fecha: e.target.value})}
+              onChange={e => {
+                setForm({...form, fecha: e.target.value, hora: ''})
+              }}
             />
-            <div className="grid grid-cols-3 gap-2">
-              {horarios.map(h => (
-                <button key={h}
-                  onClick={() => setForm({...form, hora: h})}
-                  className={`py-2 rounded-xl border text-sm transition ${form.hora === h ? 'border-red-500 bg-red-500 text-white' : 'border-zinc-700 bg-zinc-800 hover:border-red-500'}`}>
-                  {h}
-                </button>
-              ))}
-            </div>
+
+            {form.fecha && (
+              <div className="grid grid-cols-3 gap-2">
+                {horarios.map(h => {
+                  const ocupado = horariosOcupados.includes(h)
+                  const seleccionado = form.hora === h
+                  return (
+                    <button key={h}
+                      onClick={() => !ocupado && setForm({...form, hora: h})}
+                      disabled={ocupado}
+                      className={`py-2 rounded-xl border text-sm transition
+                        ${ocupado ? 'border-zinc-700 bg-zinc-900 text-zinc-600 cursor-not-allowed line-through' : ''}
+                        ${seleccionado ? 'border-red-500 bg-red-500 text-white' : ''}
+                        ${!ocupado && !seleccionado ? 'border-zinc-700 bg-zinc-800 hover:border-red-500' : ''}
+                      `}>
+                      {ocupado ? `${h} ✗` : h}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
 
             {error && <p className="text-red-400 text-sm">{error}</p>}
 
             <button
               onClick={() => form.fecha && form.hora && confirmarTurno()}
-              disabled={cargando}
+              disabled={cargando || !form.hora}
               className="bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-400 transition mt-2 disabled:opacity-50">
-              {cargando ? 'Verificando...' : 'Confirmar →'}
+              {cargando ? 'Guardando...' : 'Confirmar →'}
             </button>
             <button onClick={() => setPaso(2)} className="text-zinc-500 hover:text-white transition text-sm">← Volver</button>
           </div>
