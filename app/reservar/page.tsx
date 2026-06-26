@@ -92,13 +92,14 @@ export default function Reservar() {
         {paso === 3 && (
           <div className="flex flex-col gap-4">
             <input
-              type="date"
-              className="bg-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
-              value={form.fecha}
-              onChange={e => {
-                setForm({...form, fecha: e.target.value, hora: ''})
-              }}
-            />
+               type="date"
+                min={new Date().toISOString().split('T')[0]}
+                className="bg-zinc-800 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-red-500"
+                value={form.fecha}
+                onChange={e => {
+        setForm({...form, fecha: e.target.value, hora: ''})
+  }}
+/>
 
             {form.fecha && (
               <div className="grid grid-cols-3 gap-2">
